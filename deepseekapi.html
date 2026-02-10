@@ -1,0 +1,330 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0b10">
+    <title>DeepSeek AI</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --bg-dark: #0a0b10;
+            --glass: rgba(20, 20, 25, 0.7); /* iOS上增加不透明度以提升性能 */
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; /* 使用 iOS 原生字体 */
+            background: #0a0b10;
+            color: #e0e0e0;
+            /* 使用 dvh 解决 Safari 地址栏伸缩问题 */
+            height: 100dvh; 
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* 适配刘海屏背景 */
+            padding-top: env(safe-area-inset-top); 
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1c2c 0%, #000 100%);
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 顶部导航 */
+        header {
+            padding: 15px 20px;
+            background: rgba(10, 11, 16, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 聊天区域 */
+        #history {
+            flex: 1;
+            overflow-y: scroll; /* 必须用 scroll */
+            -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .msg {
+            max-width: 88%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background: #007AFF; /* iOS 经典蓝，但在暗黑模式下微调 */
+            background: linear-gradient(135deg, #0A84FF, #0055ff);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-msg {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Markdown 样式修正 */
+        .markdown-body pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: 0.85rem;
+        }
+        .markdown-body code {
+            font-family: 'Menlo', monospace;
+        }
+        .markdown-body p { margin-bottom: 8px; }
+        .markdown-body ul { padding-left: 20px; margin-bottom: 8px; }
+
+        /* 底部输入区 - 核心 iOS 适配部分 */
+        .input-container {
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 12px 15px;
+            /* 关键：适配底部 Home Bar */
+            padding-bottom: calc(12px + env(safe-area-inset-bottom)); 
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        #question {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: white;
+            padding: 10px 15px;
+            /* 关键：字体 >= 16px 防止 iOS 自动放大 */
+            font-size: 16px; 
+            max-height: 100px;
+            resize: none;
+            outline: none;
+            -webkit-appearance: none; /* 去除 iOS 默认阴影 */
+        }
+
+        #question:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.15);
+        }
+
+        #askBtn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: #000;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold;
+        }
+        
+        #askBtn:disabled { background: #555; }
+
+        /* 工具栏 */
+        .tools {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+        }
+        .tools button {
+            background: none; border: none; font-size: 1.2rem;
+            cursor: pointer; opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-wrapper">
+    <header>
+        <h1>DeepSeek AI</h1>
+        <div class="tools">
+            <button onclick="manualTrim()" title="修剪历史">✂️</button>
+            <button onclick="clearHistory()" title="重置">🧹</button>
+        </div>
+    </header>
+
+    <div id="history">
+        <div class="msg ai-msg">
+            准备就绪。我是您的智能助手。
+        </div>
+    </div>
+
+    <div class="input-container">
+        <textarea id="question" rows="1" placeholder="发送消息..."></textarea>
+        <button id="askBtn" onclick="askDeepSeek()">↑</button>
+    </div>
+</div>
+
+<script>
+    // 配置
+    const CONFIG = {
+        API_KEY: 'sk-dd67a40d855e46efa16a8cb3106f7ef1', // 建议首次运行时填写，或留空手动输入
+        API_URL: 'https://api.deepseek.com/v1/chat/completions',
+        MODEL: 'deepseek-chat',
+        MAX_HISTORY_ROUNDS: 5 // 最高对话轮数
+    };
+
+    let messageHistory = JSON.parse(localStorage.getItem('deepseek_chat_history')) || [];
+    let isProcessing = false;
+
+    // 初始化 Markdown
+    marked.setOptions({
+        highlight: (code) => hljs.highlightAuto(code).value,
+        breaks: true
+    });
+
+    // 初始化逻辑
+    window.addEventListener('DOMContentLoaded', () => {
+        loadApiKey();
+        renderHistory();
+        
+        const input = document.getElementById('question');
+        
+        // 自动增高
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // 手机键盘逻辑优化
+        // 手机上通常不需要 Enter 发送（因为需要换行），点击按钮发送更符合习惯
+        // 但保留 Ctrl+Enter 发送供外接键盘使用
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                askDeepSeek();
+            }
+        });
+    });
+
+    function loadApiKey() {
+        if (!CONFIG.API_KEY) CONFIG.API_KEY = localStorage.getItem('deepseek_api_key');
+        if (!CONFIG.API_KEY) {
+            const key = prompt('请粘贴 DeepSeek API Key:');
+            if (key) {
+                localStorage.setItem('deepseek_api_key', key);
+                CONFIG.API_KEY = key;
+            }
+        }
+    }
+
+    function addMessageToUI(role, content) {
+        const historyDiv = document.getElementById('history');
+        const div = document.createElement('div');
+        div.className = `msg ${role === 'user' ? 'user-msg' : 'ai-msg'}`;
+        
+        const html = role === 'user' ? content.replace(/\n/g, '<br>') : marked.parse(content);
+        div.innerHTML = `<div class="markdown-body">${html}</div>`;
+        
+        historyDiv.appendChild(div);
+        // 平滑滚动到底部
+        historyDiv.scrollTo({ top: historyDiv.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function askDeepSeek() {
+        const input = document.getElementById('question');
+        const btn = document.getElementById('askBtn');
+        const text = input.value.trim();
+        
+        if (!text || isProcessing) return;
+
+        isProcessing = true;
+        btn.disabled = true;
+        input.value = '';
+        input.style.height = 'auto';
+
+        messageHistory.push({ role: 'user', content: text });
+        addMessageToUI('user', text);
+
+        try {
+            const res = await fetch(CONFIG.API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${CONFIG.API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: CONFIG.MODEL,
+                    messages: [{ role: 'system', content: '你是DeepSeek智能助手。' }, ...messageHistory],
+                    temperature: 0.7
+                })
+            });
+            
+            const data = await res.json();
+            const reply = data.choices[0].message.content;
+            
+            messageHistory.push({ role: 'assistant', content: reply });
+            addMessageToUI('assistant', reply);
+            localStorage.setItem('deepseek_chat_history', JSON.stringify(messageHistory.slice(-16)));
+            
+        } catch (e) {
+            alert('请求失败: ' + e.message);
+            messageHistory.pop(); // 移除失败的提问
+        } finally {
+            isProcessing = false;
+            btn.disabled = false;
+        }
+    }
+
+    function clearHistory() {
+        if(confirm('清空对话？')) {
+            localStorage.removeItem('deepseek_chat_history');
+            location.reload();
+        }
+    }
+
+    function renderHistory() {
+        messageHistory.forEach(m => addMessageToUI(m.role, m.content));
+    }
+</script>
+</body>
+</html>
