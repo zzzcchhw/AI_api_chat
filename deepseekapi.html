@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#ffffff">
@@ -15,202 +14,129 @@
     
     <style>
         :root {
-            /* 定义新配色 */
-            --lakers-purple: #552583; /* 官方湖人紫稍作提亮以适合屏幕显示 */
+            --lakers-purple: #552583;
             --lakers-purple-light: #7B1FA2;
             --bg-light: #ffffff;
-            --bg-lavender: #f3e5f5; /* 淡薰衣草紫 */
-            --text-main: #333333;   /* 深灰色文字 */
-            --glass-light: rgba(255, 255, 255, 0.75); /* 浅色毛玻璃 */
-            --glass-border-purple: rgba(85, 37, 131, 0.15); /* 淡淡的紫色边框 */
+            --bg-lavender: #f3e5f5;
+            --text-main: #333333;
+            --glass-light: rgba(255, 255, 255, 0.75);
+            --glass-border-purple: rgba(85, 37, 131, 0.15);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-            /* 背景更改为白色到淡紫色的渐变 */
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
             background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-lavender) 100%);
             color: var(--text-main);
-            height: 100dvh; /* 使用 dvh 解决 Safari 地址栏伸缩问题 */
+            height: 100dvh;
             width: 100vw;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             padding-top: env(safe-area-inset-top); 
             padding-bottom: env(safe-area-inset-bottom);
-            position: relative;
         }
 
-        /* 水印层 */
+        /* 巨大的水印 */
         body::before {
             content: "DeepSeekChat";
             position: fixed;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 18vw; /* 巨大字体 */
+            font-size: 18vw;
             font-weight: 900;
             color: var(--lakers-purple);
-            opacity: 0.04; /* 极淡的透明度 */
-            pointer-events: none; /* 确保点击穿透，不影响操作 */
+            opacity: 0.04;
+            pointer-events: none;
             z-index: 0;
             white-space: nowrap;
             font-family: 'Arial Black', sans-serif;
         }
 
         .chat-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 1; /* 确保在水印上方 */
+            flex: 1; display: flex; flex-direction: column;
+            position: relative; width: 100%; height: 100%; z-index: 1;
         }
 
-        /* 顶部导航 */
         header {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.85); /* 浅色毛玻璃 */
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border-purple);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             z-index: 10;
         }
 
         header h1 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            /* 标题改为湖人紫 */
-            color: var(--lakers-purple);
+            font-size: 1.2rem; font-weight: 800; color: var(--lakers-purple);
             letter-spacing: 0.5px;
         }
 
-        /* 聊天区域 */
         #history {
-            flex: 1;
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
-            padding: 20px 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
+            flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch;
+            padding: 20px 15px; display: flex; flex-direction: column; gap: 18px;
         }
 
         .msg {
-            max-width: 88%;
-            padding: 14px 18px;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            word-wrap: break-word;
+            max-width: 88%; padding: 14px 18px; border-radius: 20px;
+            font-size: 0.95rem; line-height: 1.5; word-wrap: break-word;
             box-shadow: 0 2px 10px rgba(85, 37, 131, 0.05);
         }
 
         .user-msg {
             align-self: flex-end;
-            /* 用户气泡改为湖人紫渐变 */
             background: linear-gradient(135deg, var(--lakers-purple), var(--lakers-purple-light));
-            color: white;
-            border-bottom-right-radius: 4px;
+            color: white; border-bottom-right-radius: 4px;
         }
 
         .ai-msg {
             align-self: flex-start;
-            /* AI气泡改为白色毛玻璃，带深色文字 */
-            background: var(--glass-light);
-            border: 1px solid var(--glass-border-purple);
-            color: var(--text-main);
-            border-bottom-left-radius: 4px;
+            background: var(--glass-light); border: 1px solid var(--glass-border-purple);
+            color: var(--text-main); border-bottom-left-radius: 4px;
         }
 
-        /* Markdown 样式修正 (适配浅色背景) */
         .markdown-body pre {
-            background: #f0f0f5; /* 浅灰色代码背景 */
-            border: 1px solid #e0e0e8;
-            padding: 12px;
-            border-radius: 12px;
-            overflow-x: auto;
-            margin: 10px 0;
+            background: #f0f0f5; border: 1px solid #e0e0e8;
+            padding: 12px; border-radius: 12px; overflow-x: auto; margin: 10px 0;
         }
-        .markdown-body code { font-family: 'Menlo', monospace; color: #d63384; }
-        /* 在紫色用户气泡里的代码块需要特殊处理为白色 */
-        .user-msg .markdown-body code { color: #ffd700; /* 湖人金点缀 */ }
+        .user-msg .markdown-body code { color: #ffd700; }
         .user-msg .markdown-body pre { background: rgba(0,0,0,0.2); border: none; }
 
-        /* 底部输入区 */
         .input-container {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-top: 1px solid var(--glass-border-purple);
             padding: 12px 15px;
             padding-bottom: calc(12px + env(safe-area-inset-bottom)); 
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
+            display: flex; gap: 12px; align-items: flex-end;
             box-shadow: 0 -5px 20px rgba(85, 37, 131, 0.03);
         }
 
         #question {
-            flex: 1;
-            /* 输入框改为白色背景 */
-            background: #ffffff;
+            flex: 1; background: #ffffff;
             border: 2px solid var(--glass-border-purple);
-            border-radius: 24px;
-            color: var(--text-main);
-            padding: 12px 16px;
-            font-size: 16px; 
-            max-height: 120px;
-            resize: none;
-            outline: none;
-            -webkit-appearance: none;
+            border-radius: 24px; color: var(--text-main);
+            padding: 12px 16px; font-size: 16px; 
+            max-height: 120px; resize: none; outline: none;
             transition: all 0.3s;
         }
-        
-        #question::placeholder { color: #a0a0b0; }
-
-        #question:focus {
-            border-color: var(--lakers-purple);
-            box-shadow: 0 0 0 4px rgba(85, 37, 131, 0.1);
-        }
+        #question:focus { border-color: var(--lakers-purple); }
 
         #askBtn {
-            width: 44px; height: 44px;
-            border-radius: 50%;
-            border: none;
-            /* 按钮改为湖人紫 */
-            background: var(--lakers-purple);
-            color: white;
-            flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold;
-            transition: all 0.2s;
+            width: 44px; height: 44px; border-radius: 50%; border: none;
+            background: var(--lakers-purple); color: white;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 12px rgba(85, 37, 131, 0.3);
         }
-        
-        #askBtn:active { transform: scale(0.95); }
         #askBtn:disabled { background: #ccc; box-shadow: none; }
 
-        /* 工具栏图标改为深色 */
-        .tools {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 15px;
-            z-index: 20;
-        }
+        .tools { display: flex; gap: 15px; }
         .tools button {
-            background: none; border: none; font-size: 1.2rem;
+            background: none; border: none; font-size: 1.1rem;
             cursor: pointer; opacity: 0.6; color: var(--text-main);
-            transition: opacity 0.2s;
         }
-        .tools button:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -219,6 +145,7 @@
     <header>
         <h1>DeepSeekChat</h1>
         <div class="tools">
+            <button onclick="updateApiKey()" title="设置密钥">🔑</button>
             <button onclick="manualTrim()" title="修剪历史">✂️</button>
             <button onclick="clearHistory()" title="重置">🧹</button>
         </div>
@@ -226,43 +153,43 @@
 
     <div id="history">
         <div class="msg ai-msg">
-            您好！我是 DeepSeekChat 智能助手，很高兴为您服务。
+            我是 DeepSeekChat。请确保您已点击右上角 🔑 设置了 API Key。
         </div>
     </div>
 
     <div class="input-container">
         <textarea id="question" rows="1" placeholder="输入消息..."></textarea>
         <button id="askBtn" onclick="askDeepSeek()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
         </button>
     </div>
 </div>
 
 <script>
     // ============================================
-    // ⚠️ 重要：请在此处填入你的 API Key
+    // ⚠️ 安全设置：这里留空！不要填 Key！
     // ============================================
     const CONFIG = {
-        API_KEY: '', // 在这里粘贴你的密钥，例如 'sk-xxxxxxxxx'
+        API_KEY: '', // 留空，代码会自动从本地存储读取
         API_URL: 'https://api.deepseek.com/v1/chat/completions',
-        MODEL: 'deepseek-chat',
-        MAX_HISTORY_ROUNDS: 8 
+        MODEL: 'deepseek-chat'
     };
 
     let messageHistory = JSON.parse(localStorage.getItem('deepseek_chat_history')) || [];
     let isProcessing = false;
 
-    // 初始化 Markdown (使用 github 风格高亮)
-    marked.setOptions({
-        highlight: (code) => hljs.highlightAuto(code).value,
-        breaks: true
-    });
+    marked.setOptions({ highlight: (code) => hljs.highlightAuto(code).value, breaks: true });
 
     window.addEventListener('DOMContentLoaded', () => {
-        loadApiKey();
+        // 页面加载时，尝试读取本地Key
+        const localKey = localStorage.getItem('deepseek_api_key');
+        if (localKey) {
+            CONFIG.API_KEY = localKey;
+        } else {
+            // 如果没有Key，稍后自动弹窗询问
+            setTimeout(() => updateApiKey(true), 1000);
+        }
+
         renderHistory();
         
         const input = document.getElementById('question');
@@ -270,24 +197,19 @@
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                askDeepSeek();
-            }
-        });
     });
 
-    function loadApiKey() {
-        if (!CONFIG.API_KEY) CONFIG.API_KEY = localStorage.getItem('deepseek_api_key');
-        // 如果代码里没写，且本地也没存，才弹窗问
-        if (!CONFIG.API_KEY) {
-            const key = prompt('请粘贴 DeepSeek API Key:');
-            if (key) {
-                localStorage.setItem('deepseek_api_key', key);
-                CONFIG.API_KEY = key;
-            }
+    // 核心：设置/更新 API Key 的功能
+    function updateApiKey(isFirstTime = false) {
+        const currentKey = localStorage.getItem('deepseek_api_key') || '';
+        let promptText = isFirstTime ? '欢迎！请粘贴您的 DeepSeek API Key 以开始使用（密钥将安全保存在您的手机本地）：' : '更新 API Key：';
+        
+        const newKey = prompt(promptText, currentKey);
+        if (newKey) {
+            localStorage.setItem('deepseek_api_key', newKey.trim());
+            CONFIG.API_KEY = newKey.trim();
+            alert('密钥已保存！');
+            if (isFirstTime) location.reload();
         }
     }
 
@@ -295,27 +217,22 @@
         const historyDiv = document.getElementById('history');
         const div = document.createElement('div');
         div.className = `msg ${role === 'user' ? 'user-msg' : 'ai-msg'}`;
-        
-        // 用户消息依然用纯文本以保持格式整洁，AI消息用Markdown渲染
         const html = role === 'user' ? content.replace(/\n/g, '<br>') : marked.parse(content);
         div.innerHTML = `<div class="markdown-body">${html}</div>`;
-        
         historyDiv.appendChild(div);
         historyDiv.scrollTo({ top: historyDiv.scrollHeight, behavior: 'smooth' });
     }
 
     async function askDeepSeek() {
+        if (!CONFIG.API_KEY) {
+            updateApiKey(true);
+            return;
+        }
+        
         const input = document.getElementById('question');
         const btn = document.getElementById('askBtn');
         const text = input.value.trim();
-        
         if (!text || isProcessing) return;
-
-        if (!CONFIG.API_KEY) {
-            alert("请先配置 API Key");
-            loadApiKey();
-            return;
-        }
 
         isProcessing = true;
         btn.disabled = true;
@@ -328,56 +245,42 @@
         try {
             const res = await fetch(CONFIG.API_URL, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${CONFIG.API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${CONFIG.API_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     model: CONFIG.MODEL,
-                    messages: [{ role: 'system', content: '你是DeepSeekChat智能助手。' }, ...messageHistory],
+                    messages: [{ role: 'system', content: 'You are DeepSeekChat.' }, ...messageHistory.slice(-10)],
                     temperature: 0.7
                 })
             });
+            if (!res.ok) throw new Error((await res.json()).error?.message || '请求失败');
             
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error?.message || '请求失败');
-            }
-
-            const data = await res.json();
-            const reply = data.choices[0].message.content;
-            
+            const reply = (await res.json()).choices[0].message.content;
             messageHistory.push({ role: 'assistant', content: reply });
             addMessageToUI('assistant', reply);
             localStorage.setItem('deepseek_chat_history', JSON.stringify(messageHistory.slice(-16)));
-            
         } catch (e) {
             alert('错误: ' + e.message);
-            messageHistory.pop(); 
+            if (e.message.includes('Auth') || e.message.includes('Key')) updateApiKey();
+            messageHistory.pop();
         } finally {
             isProcessing = false;
             btn.disabled = false;
-            input.focus();
         }
     }
 
     function clearHistory() {
-        if(confirm('确定清空所有对话记录吗？')) {
+        if(confirm('清空对话？')) {
             messageHistory = [];
             localStorage.removeItem('deepseek_chat_history');
             location.reload();
         }
     }
-    
+
     function manualTrim() {
-        if(messageHistory.length > 4) {
-            messageHistory = messageHistory.slice(-4);
-            localStorage.setItem('deepseek_chat_history', JSON.stringify(messageHistory));
-            alert('已保留最近2轮对话');
-            location.reload();
-        } else {
-            alert('记录较短，无需修剪');
-        }
+        messageHistory = messageHistory.slice(-4);
+        localStorage.setItem('deepseek_chat_history', JSON.stringify(messageHistory));
+        alert('已清理上下文');
+        location.reload();
     }
 
     function renderHistory() {
